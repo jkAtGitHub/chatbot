@@ -2,7 +2,7 @@ import pandas as pd
 from openai import OpenAI
 import os
 import streamlit as st
-
+import time
 # Set your OpenAI API key
 OPENAI_API_KEY = 'sk-proj-Mg8KiNNKLAlC9bNcqk1oT3BlbkFJ83Ha86GAIh7vVnvrhVPU'
 
@@ -189,12 +189,25 @@ data = {
 
 df = pd.DataFrame(data)
 
+def display_typing_animation(text, delay=0.02):
+    words = text.split()
+    text_container = st.empty()  # Create an empty container
+    for i in range(len(words) + 1):
+        #text_container.text(" ".join(words[:i]))  # Update the container with the text
 
+        wrapped_text = " ".join(words[:i]).replace('.', '<br>')
+        text_container.markdown(f'<div style="word-wrap: break-word;">{wrapped_text}</div>', unsafe_allow_html=True)
+        
+        time.sleep(delay)
+        
+        
 # Streamlit app
 st.title('Walmart Cash Chatbot')
-st.text_area('Hi! Welcome! Ask anything about Cash')
+st.text('Hi! Welcome! Ask anything about Cash')
 query = st.text_input('Enter your query')
 
 if query:
-    response = chatbot(query, 2, 102)
-    st.write(response)
+    with st.spinner("Processing..."):
+        response = chatbot(query, 2, 102)
+        st.empty()  # Clear the spinner
+        display_typing_animation(response)
