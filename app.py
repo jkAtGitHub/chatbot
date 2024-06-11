@@ -62,7 +62,18 @@ def handle_usability_intent(query):
     return "This is a response for Usability Intent."
 
 def handle_faq_intent(query):
-    return "This is a response for FAQ Intent."
+
+    TOS = read_text_file("TOS.txt")
+    context = """Read this Terms and servoce and provide your answers in 1-2 sentences. {TOS}
+    """
+    response = client.with_options(max_retries=5).chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": f"You are an assistant that answers customer queries clearly. {context}"},
+            {"role": "user", "content": query}
+        ]
+    )
+    return response.choices[0].message.content.strip()
 
 
 
@@ -189,13 +200,18 @@ data = {
 
 df = pd.DataFrame(data)
 
+def read_text_file(file_path):
+    with open(file_path, 'r') as file:
+        content = file.read()
+    return content
+    
 def display_typing_animation(text, delay=0.02):
     words = text.split()
     text_container = st.empty()  # Create an empty container
     for i in range(len(words) + 1):
-        #text_container.text(" ".join(words[:i]))  # Update the container with the text
+        text_container.text(" ".join(words[:i]))  # Update the container with the text
 
-        wrapped_text = " ".join(words[:i]).replace('.', '<br>')
+        wrapped_text = text[:i].replace('\n', '<br>')
         text_container.markdown(f'<div style="word-wrap: break-word;">{wrapped_text}</div>', unsafe_allow_html=True)
         
         time.sleep(delay)
@@ -203,11 +219,15 @@ def display_typing_animation(text, delay=0.02):
         
 # Streamlit app
 st.title('Walmart Cash Chatbot')
+st.dataframe(df)
 st.text('Hi! Welcome! Ask anything about Cash')
+custid = st.text_input('Enter Customer ID')
+orderid = st.text_input('Enter Order ID')
 query = st.text_input('Enter your query')
 
-if query:
+if custid and orderid and query:
     with st.spinner("Processing..."):
         response = chatbot(query, 2, 102)
+        print(response)
         st.empty()  # Clear the spinner
-        display_typing_animation(response)
+        st.write(response)
