@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 import streamlit as st
 import time
+
 # Set your OpenAI API key
 OPENAI_API_KEY = 'sk-proj-Mg8KiNNKLAlC9bNcqk1oT3BlbkFJ83Ha86GAIh7vVnvrhVPU'
 
@@ -51,7 +52,7 @@ def handle_discoverability_intent(subintent, customer_id, order_id):
     
     if subintent == "Difficulty discovering earned Cash":
         cash_status = get_cash_status(customer_id, order_id)
-        return f"I understnad that you're having {subintent}.\nYour balance can be found here : https://www.walmart.com/rewards-history\nThe status of the order you selected is {cash_status}"
+        return f"I understnad that you're having {subintent}.<br>Your balance can be found here : 'https://www.walmart.com/rewards-history' <br>{cash_status}"
     elif subintent == "Difficulty discovering items/offers with Cash":
         return f"I understnad that you're having {subintent}"
     else:
@@ -62,18 +63,7 @@ def handle_usability_intent(query):
     return "This is a response for Usability Intent."
 
 def handle_faq_intent(query):
-
-    TOS = read_text_file("TOS.txt")
-    context = """Read this Terms and servoce and provide your answers in 1-2 sentences. {TOS}
-    """
-    response = client.with_options(max_retries=5).chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": f"You are an assistant that answers customer queries clearly. {context}"},
-            {"role": "user", "content": query}
-        ]
-    )
-    return response.choices[0].message.content.strip()
+    return "This is a response for FAQ Intent."
 
 
 
@@ -189,7 +179,7 @@ data = {
     'OrderDate': ['2024-06-01', '2024-06-02', '2024-06-03', '2024-06-04'],
     'OrderAmount': [100, 150, 200, 250],
     'ItemsPurchased': [['item1', 'item2'], ['item3'], ['item4', 'item5'], ['item6']],
-    'EligibleForCash': [True, True, False, True],
+    'EligibleForCash': [True, True, True, True],
     'ClipMade': [True, True, False, True],
     'MustBuyCriteriaMet': [True, True, False, False],
     'PurchaseWithinRedeemWindow': [True, True, False, True],
@@ -200,34 +190,35 @@ data = {
 
 df = pd.DataFrame(data)
 
-def read_text_file(file_path):
-    with open(file_path, 'r') as file:
-        content = file.read()
-    return content
-    
+
 def display_typing_animation(text, delay=0.02):
     words = text.split()
     text_container = st.empty()  # Create an empty container
     for i in range(len(words) + 1):
-        text_container.text(" ".join(words[:i]))  # Update the container with the text
+        #text_container.text(" ".join(words[:i]))  # Update the container with the text
 
-        wrapped_text = text[:i].replace('\n', '<br>')
+        wrapped_text = "Walmart Assistant:\n" + " ".join(words[:i]).replace('.', '<br>')
         text_container.markdown(f'<div style="word-wrap: break-word;">{wrapped_text}</div>', unsafe_allow_html=True)
         
         time.sleep(delay)
         
-        
+query_text = ""
 # Streamlit app
 st.title('Walmart Cash Chatbot')
-st.dataframe(df)
 st.text('Hi! Welcome! Ask anything about Cash')
-custid = st.text_input('Enter Customer ID')
-orderid = st.text_input('Enter Order ID')
-query = st.text_input('Enter your query')
+st.dataframe(df)
 
-if custid and orderid and query:
+userid = st.text_input('User ID')
+orderid = st.text_input('Order ID')
+query = st.chat_input('Enter your query')
+
+
+if userid and orderid and query:
+    query_text += f"User: {query}\n"
     with st.spinner("Processing..."):
-        response = chatbot(query, 2, 102)
-        print(response)
+        userid = int(userid)
+        orderid = int(orderid)
+        response = chatbot(query, userid, orderid)
         st.empty()  # Clear the spinner
-        st.write(response)
+        st.text(query_text)
+        display_typing_animation(response)
