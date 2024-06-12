@@ -5,7 +5,7 @@ import streamlit as st
 import time
 
 # Set your OpenAI API key
-OPENAI_API_KEY = 'sk-proj-Mg8KiNNKLAlC9bNcqk1oT3BlbkFJ83Ha86GAIh7vVnvrhVPU'
+OPENAI_API_KEY = st.secrets["OPENAI_KEY"]
 
 client = OpenAI(
     # This is the default and can be omitted
