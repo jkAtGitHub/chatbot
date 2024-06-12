@@ -63,7 +63,17 @@ def handle_usability_intent(query):
     return "This is a response for Usability Intent."
 
 def handle_faq_intent(query):
-    return "This is a response for FAQ Intent."
+    TOS = read_text_file("TOS.txt")
+    context = """Read this Terms and servoce and provide your answers in 1-2 sentences. {TOS}
+    """
+    response = client.with_options(max_retries=5).chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": f"You are an assistant that answers customer queries clearly. {context}"},
+            {"role": "user", "content": query}
+        ]
+    )
+    return response.choices[0].message.content.strip()
 
 
 
@@ -188,7 +198,14 @@ data = {
     'CashEarnedDate': ['2024-06-04', None, None, None]
 }
 
+
 df = pd.DataFrame(data)
+
+def read_text_file(file_path):
+    with open(file_path, 'r') as file:
+        content = file.read()
+    return content
+
 
 
 def display_typing_animation(text, delay=0.02):
@@ -201,6 +218,8 @@ def display_typing_animation(text, delay=0.02):
         text_container.markdown(f'<div style="word-wrap: break-word;">{wrapped_text}</div>', unsafe_allow_html=True)
         
         time.sleep(delay)
+
+
         
 query_text = ""
 # Streamlit app
