@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 import streamlit as st
 import time
+import re
 
 # Set your OpenAI API key
 OPENAI_API_KEY = st.secrets["OPENAI_KEY"]
@@ -206,6 +207,13 @@ def read_text_file(file_path):
         content = file.read()
     return content
 
+def replace_cash_with_walmart_cash(query):
+    # Check if 'Walmart Cash' is already in the query, ignoring case
+    if re.search(r'walmart cash', query, re.IGNORECASE) is None:
+        # Replace 'Cash' with 'Walmart Cash' using a case-insensitive match
+        query = re.sub(r'\bcash\b', 'Walmart Cash', query, flags=re.IGNORECASE)
+    return query
+
 
 
 def display_typing_animation(text, delay=0.02):
@@ -233,6 +241,7 @@ query = st.chat_input('Enter your query')
 
 
 if userid and orderid and query:
+    query = replace_cash_with_walmart_cash(query)
     query_text += f"User: {query}\n"
     with st.spinner("Processing..."):
         userid = int(userid)
