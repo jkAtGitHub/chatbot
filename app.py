@@ -61,11 +61,21 @@ def handle_discoverability_intent(subintent, customer_id, order_id):
         
 
 def handle_usability_intent(query):
-    return "This is a response for Usability Intent."
+    TOS = read_text_file("TOS.txt")
+    context = """Read this Terms and service and provide your answers in 1-2 sentences. {TOS}
+    """
+    response = client.with_options(max_retries=5).chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": f"You are an assistant that answers customer queries clearly. {context}"},
+            {"role": "user", "content": query}
+        ]
+    )
+    return response.choices[0].message.content.strip()
 
 def handle_faq_intent(query):
     TOS = read_text_file("TOS.txt")
-    context = """Read this Terms and servoce and provide your answers in 1-2 sentences. {TOS}
+    context = """Read this Terms and service and provide your answers in 1-2 sentences. {TOS}
     """
     response = client.with_options(max_retries=5).chat.completions.create(
         model="gpt-3.5-turbo",
