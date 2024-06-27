@@ -227,7 +227,7 @@ query = st.text_input('Enter your query')
 
 if custid and orderid and query:
     with st.spinner("Processing..."):
-        response = chatbot(query, 2, 102)
+        response = chatbot(query, custid, orderid)
         print(response)
         st.empty()  # Clear the spinner
         st.write(response)
